@@ -9,9 +9,9 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
 public class Hardware {
-    public final int CPR = 560; //Encoder counts per Wheel revolution
+    public final int CPR = 560; //Encoder counts per Wheel revolution//
     public final double deadZone = 0.05;
-    private final double DIAMETER = 4; //encoded drive wheel diameter (in)
+    private final double DIAMETER = 4;
     private final double GEARING = 1;
     public final double CPI = (CPR * GEARING) / (DIAMETER * Math.PI);//Encoder Counts per Wheel Revolution Per Inch//
     public HardwareMap map;
@@ -94,13 +94,12 @@ public class Hardware {
         FrontRight.setPower(pow);
         BackLeft.setPower(pow);
         BackRight.setPower(pow);
-        while (FrontLeft.isBusy() && FrontRight.isBusy() && BackLeft.isBusy() && BackRight.isBusy()) {
-            //wait until????
+        if (!FrontLeft.isBusy() && !FrontRight.isBusy() && !BackLeft.isBusy() && !BackRight.isBusy()) {
+            FrontLeft.setPower(0);
+            FrontRight.setPower(0);
+            BackLeft.setPower(0);
+            BackRight.setPower(0);
         }
-        FrontLeft.setPower(0);
-        FrontRight.setPower(0);
-        BackLeft.setPower(0);
-        BackRight.setPower(0);
         FrontLeft.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         FrontRight.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         BackLeft.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
@@ -108,8 +107,8 @@ public class Hardware {
     }
 
     public void LiftMid(double pow) {
-        LiftLeft.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        LiftRight.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        //LiftLeft.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        LiftRight.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);//
         LiftLeft.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
         LiftRight.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
         LiftLeft.setTargetPosition(20);
@@ -129,8 +128,8 @@ public class Hardware {
     }
 
     public void LiftHigh(double pow) {
-        LiftLeft.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        LiftRight.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        //LiftLeft.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        LiftRight.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);//
         LiftLeft.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
         LiftRight.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
         LiftLeft.setTargetPosition(50);
@@ -147,5 +146,48 @@ public class Hardware {
         LiftRight.setPower(0);
         LiftLeft.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         LiftRight.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+    }
+
+    public void TeleOpDrive(int LHand) {
+        if (LHand == 1) {
+            if (LeftXC >= deadZone) {
+                FrontLeft.setPower(LeftXC);
+                BackLeft.setPower(LeftXC);
+                FrontRight.setPower(LeftXC);
+                BackRight.setPower(LeftXC);
+            } else if (RightYC >= deadZone) {
+                FrontLeft.setPower(RightXC);
+                BackLeft.setPower(RightXC);
+                FrontRight.setPower(RightXC);
+                BackRight.setPower(RightXC);
+            }
+        } else if (LHand == 0) {
+            if (RightXC >= deadZone) {
+                FrontLeft.setPower(RightX);
+                BackLeft.setPower(RightX);
+                FrontRight.setPower(RightX);
+                BackRight.setPower(RightX);
+            } else if (LeftYC >= deadZone) {
+                FrontLeft.setPower(LeftX);
+                BackLeft.setPower(LeftX);
+                FrontRight.setPower(LeftX);
+                BackRight.setPower(LeftX);
+            }
+        } else if (TurnerButton >= deadZone) {
+            Turner.setPower(.5 * TurnerButton);
+        } else if (LiftButtonMid) {
+            LiftMid(50);
+        } else if (LiftButtonHigh) {
+            LiftHigh(50);
+        } else if (StopButton >= deadZone) {
+            FrontLeft.setPower(0);
+            BackLeft.setPower(0);
+            FrontRight.setPower(0);
+            BackRight.setPower(0);
+        }
+    }
+
+    public void Autonomous() {
+        DriveStraightInches(50, 12);
     }
 }
