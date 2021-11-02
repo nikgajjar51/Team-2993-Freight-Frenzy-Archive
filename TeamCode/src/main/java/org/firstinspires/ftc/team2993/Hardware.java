@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.TouchSensor;
+import com.qualcomm.robotcore.util.Range;
 
 public class Hardware {
     public final int CPR = 560; //Encoder counts per Wheel revolution//
@@ -17,7 +18,7 @@ public class Hardware {
     public HardwareMap map;
     public DcMotorEx FrontLeft, FrontRight, BackLeft, BackRight, LiftLeft, LiftRight, Turner, Intake;
     public TouchSensor LiftSensor;
-    public Gamepad Controller;
+    public Gamepad Controller1, Controller2;
     float LeftX;
     float RightX;
     float LeftY;
@@ -26,29 +27,17 @@ public class Hardware {
     float RightXC = Math.abs(RightX);
     float LeftYC = Math.abs(LeftY);
     float RightYC = Math.abs(RightY);
-    float TurnerButton = Controller.right_trigger;
-    boolean LiftButtonMid = Controller.a;
-    boolean LiftButtonHigh = Controller.y;
-    double StopButton = Controller.left_trigger;
+    float TurnerButton = Controller2.right_trigger;
+    boolean LiftButtonMid = Controller2.a;
+    boolean LiftButtonHigh = Controller2.y;
+    double StopButton = Controller2.left_trigger;
 
     {
         assert false;
-        LeftX = (Controller.right_stick_x);
-    }
-
-    {
-        assert false;
-        RightX = (Controller.left_stick_x);
-    }
-
-    {
-        assert false;
-        LeftY = (Controller.left_stick_y);
-    }
-
-    {
-        assert false;
-        RightY = (Controller.left_stick_y);
+        LeftX = (Controller1.right_stick_x);
+        RightX = (Controller1.left_stick_x);
+        LeftY = (Controller1.left_stick_y);
+        RightY = (Controller1.left_stick_y);
     }
 
     public Hardware(@NonNull HardwareMap map) {
@@ -111,6 +100,7 @@ public class Hardware {
         LiftRight.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);//
         LiftLeft.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
         LiftRight.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+        //TODO - Find Correct PID Values//
         LiftLeft.setTargetPosition(20);
         LiftRight.setTargetPosition(20);
         LiftLeft.setPower(pow);
@@ -132,6 +122,7 @@ public class Hardware {
         LiftRight.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);//
         LiftLeft.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
         LiftRight.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+        //TODO - Find Correct PID Values//
         LiftLeft.setTargetPosition(50);
         LiftRight.setTargetPosition(50);
         LiftLeft.setPower(pow);
@@ -148,33 +139,26 @@ public class Hardware {
         LiftRight.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
     }
 
-    public void TeleOpDrive(int LHand) {
-        if (LHand == 1) {
-            if (LeftXC >= deadZone) {
-                FrontLeft.setPower(LeftXC);
-                BackLeft.setPower(LeftXC);
-                FrontRight.setPower(LeftXC);
-                BackRight.setPower(LeftXC);
-            } else if (RightYC >= deadZone) {
-                FrontLeft.setPower(RightXC);
-                BackLeft.setPower(RightXC);
-                FrontRight.setPower(RightXC);
-                BackRight.setPower(RightXC);
+    public void TeleOpDrive() {
+        if (RightXC >= deadZone) {
+            if (RightX >= deadZone) {
+                FrontLeft.setPower(Range.clip(RightX, -1.0, 1.0));
+                BackLeft.setPower(Range.clip(RightX, -1.0, 1.0));
+                FrontRight.setPower(Range.clip(-RightX, -1.0, 1.0));
+                BackRight.setPower(Range.clip(-RightX, -1.0, 1.0));
+            } else if (RightX <= -deadZone) {
+                FrontLeft.setPower(Range.clip(-RightX, -1.0, 1.0));
+                BackLeft.setPower(Range.clip(-RightX, -1.0, 1.0));
+                FrontRight.setPower(Range.clip(RightX, -1.0, 1.0));
+                BackRight.setPower(Range.clip(RightX, -1.0, 1.0));
             }
-        } else if (LHand == 0) {
-            if (RightXC >= deadZone) {
-                FrontLeft.setPower(RightX);
-                BackLeft.setPower(RightX);
-                FrontRight.setPower(RightX);
-                BackRight.setPower(RightX);
-            } else if (LeftYC >= deadZone) {
-                FrontLeft.setPower(LeftX);
-                BackLeft.setPower(LeftX);
-                FrontRight.setPower(LeftX);
-                BackRight.setPower(LeftX);
-            }
+        } else if (LeftYC >= deadZone) {
+            FrontLeft.setPower(Range.clip(LeftX, -1.0, 1.0));
+            BackLeft.setPower(Range.clip(LeftX, -1.0, 1.0));
+            FrontRight.setPower(Range.clip(LeftX, -1.0, 1.0));
+            BackRight.setPower(Range.clip(LeftX, -1.0, 1.0));
         } else if (TurnerButton >= deadZone) {
-            Turner.setPower(.5 * TurnerButton);
+            Turner.setPower(Range.clip(.5 * TurnerButton, -1.0, 1.0));
         } else if (LiftButtonMid) {
             LiftMid(50);
         } else if (LiftButtonHigh) {

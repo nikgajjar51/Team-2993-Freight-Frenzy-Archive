@@ -19,6 +19,7 @@ public class RedAutonomous extends OpMode {
         telemetry.addData("Status:", "Robot Hardware Initialized");
         telemetry.addLine("Waiting to Start the Match:");
         telemetry.update();
+
     }
 
     public void loop() {
